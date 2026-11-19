@@ -768,9 +768,9 @@ def _apply_map_overrides(spec: CourierSpec, map_data: dict[str, Any]) -> None:
         "tracking_endpoint": spec.tracking_endpoint,
     }
 
-    # Global request_mapping / response_mapping applied to all present endpoints
-    global_req = map_data.get("request_mapping")
-    global_resp = map_data.get("response_mapping")
+    # Global request_mapping / response_mapping (or request / response) applied to all present endpoints
+    global_req = map_data.get("request_mapping") or map_data.get("request")
+    global_resp = map_data.get("response_mapping") or map_data.get("response")
     for ep in endpoints.values():
         if ep is None:
             continue
