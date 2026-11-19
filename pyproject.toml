@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mage-carrier-gen"
+version = "0.1.0"
+description = "Generate Magento 2.4.9 (PHP 8.4/8.5) shipping carrier modules from OpenAPI 3.x / Swagger 2.0 specifications"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+mage-carrier-gen = "src.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

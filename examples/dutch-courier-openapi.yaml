@@ -1,0 +1,194 @@
+openapi: 3.0.3
+info:
+  title: Dutch Parcel Express API
+  version: 2.1.0
+  description: >
+    PostNL/DHL-inspired Dutch parcel carrier API for rate quoting,
+    shipment label generation, and real-time parcel tracking.
+servers:
+  - url: https://api.dutchparcel.nl/v2
+    description: Production API server
+  - url: https://api-sandbox.dutchparcel.nl/v2
+    description: Sandbox testing environment
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth2 / JWT Bearer token
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: Partner API key header
+  schemas:
+    RateQuoteRequest:
+      type: object
+      required:
+        - senderPostalCode
+        - senderCountry
+        - receiverPostalCode
+        - receiverCountry
+        - weightKg
+      properties:
+        senderPostalCode:
+          type: string
+          example: "1012AB"
+        senderCountry:
+          type: string
+          example: "NL"
+        receiverPostalCode:
+          type: string
+          example: "3011AA"
+        receiverCountry:
+          type: string
+          example: "NL"
+        weightKg:
+          type: number
+          format: float
+          example: 2.5
+    RateQuoteResponse:
+      type: object
+      properties:
+        quotes:
+          type: array
+          items:
+            type: object
+            properties:
+              carrierName:
+                type: string
+                example: "Dutch Parcel Express"
+              serviceCode:
+                type: string
+                example: "NL_STANDARD_24H"
+              serviceName:
+                type: string
+                example: "Standard Next-Day Delivery"
+              totalPrice:
+                type: number
+                format: float
+                example: 6.95
+              currency:
+                type: string
+                example: "EUR"
+    ShipmentLabelRequest:
+      type: object
+      required:
+        - orderReference
+        - senderPostalCode
+        - senderCountry
+        - receiverPostalCode
+        - receiverCountry
+        - weightKg
+      properties:
+        orderReference:
+          type: string
+          example: "000001234"
+        senderPostalCode:
+          type: string
+          example: "1012AB"
+        senderCountry:
+          type: string
+          example: "NL"
+        receiverPostalCode:
+          type: string
+          example: "3011AA"
+        receiverCountry:
+          type: string
+          example: "NL"
+        weightKg:
+          type: number
+          format: float
+          example: 2.5
+        labelFormat:
+          type: string
+          enum: [PDF, ZPL]
+          default: PDF
+    ShipmentLabelResponse:
+      type: object
+      properties:
+        trackingNumber:
+          type: string
+          example: "3SDPE0012345678"
+        shippingLabel:
+          type: string
+          format: byte
+          description: Base64-encoded PDF or ZPL shipping label
+    TrackingResponse:
+      type: object
+      properties:
+        trackingNumber:
+          type: string
+          example: "3SDPE0012345678"
+        status:
+          type: string
+          example: "IN_TRANSIT"
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              location:
+                type: string
+                example: "Utrecht Sorting Center"
+              description:
+                type: string
+                example: "Shipment sorted and dispatched"
+paths:
+  /rates/quote:
+    post:
+      operationId: getRateQuote
+      summary: Calculate shipping rates for a parcel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RateQuoteRequest"
+      responses:
+        "200":
+          description: Available shipping rate quotes
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateQuoteResponse"
+  /shipments/label:
+    post:
+      operationId: createShipmentLabel
+      summary: Create a shipment and generate a shipping label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShipmentLabelRequest"
+      responses:
+        "200":
+          description: Created shipment with tracking number and label
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShipmentLabelResponse"
+  /tracking/{trackingNumber}:
+    get:
+      operationId: getTrackingStatus
+      summary: Retrieve tracking status and scan events for a parcel
+      parameters:
+        - name: trackingNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current parcel tracking status and history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingResponse"

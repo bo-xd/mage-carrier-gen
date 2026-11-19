@@ -1,0 +1,18 @@
+request:
+  dest_postcode: receiverPostalCode
+  dest_country_id: receiverCountry
+  origin_postcode: senderPostalCode
+  origin_country_id: senderCountry
+  package_weight: weightKg
+  order_increment_id: orderReference
+response:
+  rates_list: quotes
+  carrier_title: carrierName
+  method_code: serviceCode
+  method_title: serviceName
+  price: totalPrice
+  currency: currency
+  tracking_number: trackingNumber
+  shipping_label: shippingLabel
+  status: status
+  events: events
